@@ -13,6 +13,7 @@
 #include <LeMonADE/utility/TaskManager.h>
 #include <LeMonADE/updater/UpdaterReadBfmFile.h>
 #include <LeMonADE/updater/UpdaterSimpleSimulator.h>
+#include <LeMonADE/updater/UpdaterAddLinearChains.h>
 
 #include "catchorg/clara/clara.hpp"
 
@@ -21,8 +22,8 @@ int main(int argc, char* argv[])
   try{
 	std::string infile  = "input.bfm";
 	std::string outfile = "outfile.bfm";
-	uint32_t max_mcs=100;
-	uint32_t save_interval=100;
+	uint32_t newMolecules = 100;
+	
 	
     bool showHelp = false;
     
@@ -35,36 +36,22 @@ int main(int argc, char* argv[])
         ["-o"]["--outfile"]
         ("BFM-file to save.")
         .required()
-    | clara::Opt( [&max_mcs](int const m)
+    | clara::Opt( [&newMolecules](int const m)
         {
-         if (m <= 0)
+         if (m < 0)
          {
-            return clara::ParserResult::runtimeError("Simulation time must be greater than 0");
+            return clara::ParserResult::runtimeError("Number of new molecules must be greater or equal to 0.");
          }
          else
          {
-            max_mcs = m;
+            newMolecules = m;
             return clara::ParserResult::ok(clara::ParseResultType::Matched);
          }
-        }, "max MCS(=100)" )
-        ["-m"]["--max-mcs"]
-        ("(required) specifies the total Monte-Carlo steps to simulate.")
+        }, "newMolecules" )
+        ["-m"]["--newMolecules"]
+        ("(required) specifies the total number of new molecules.")
         .required()
-    | clara::Opt( [&save_interval](int const s)
-        {
-         if (s < 0)
-         {
-            return clara::ParserResult::runtimeError("Save intervall must be greater than 0");
-         }
-         else
-         {
-            save_interval = s;
-            return clara::ParserResult::ok(clara::ParseResultType::Matched);
-         }
-      }, "save MCS(=100)")
-        ["-s"]["--save-mcs"]
-        ("(required) Save after every <integer> Monte-Carlo steps to the output file." )
-        .required()
+
     | clara::Help( showHelp );
         
     auto result = parser.parse( clara::Args( argc, argv ) );
@@ -87,8 +74,8 @@ int main(int argc, char* argv[])
     {
         std::cout << "infile:        " << infile << std::endl
                   << "outfile:       " << outfile << std::endl
-                  << "max_mcs:       " << max_mcs << std::endl
-                  << "save_interval: " << save_interval << std::endl;
+                  << "newMolecules:       " << newMolecules << std::endl;
+                  
     }
        
 	//seed the globally available random number generators
@@ -104,14 +91,17 @@ int main(int argc, char* argv[])
 
 	TaskManager taskmanager;
 	taskmanager.addUpdater(new UpdaterReadBfmFile<Ing>(infile,myIngredients,UpdaterReadBfmFile<Ing>::READ_LAST_CONFIG_SAVE),0);
-	//here you can choose to use MoveLocalBcc instead. Careful though: no real tests made yet
-	//(other than for latticeOccupation, valid bonds, frozen monomers...)
-	taskmanager.addUpdater(new UpdaterSimpleSimulator<Ing,MoveLocalSc>(myIngredients,save_interval));
+	
+
+    // here new Molecules are added by using UpdaterAddLinearChains with a lengh of 1 
+	taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, newMolecules, 1,1,2, true));
+    
+
 
 	taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>(outfile,myIngredients));
 	
 	taskmanager.initialize();
-	taskmanager.run(max_mcs/save_interval);
+	
 	taskmanager.cleanup();
 	
 	}

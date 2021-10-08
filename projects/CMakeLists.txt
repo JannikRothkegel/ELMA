@@ -4,3 +4,5 @@ add_subdirectory(SimpleSimulatorStandard)
 
 add_subdirectory(SimpleSimulatorNextNeighborInteraction)
 
+add_subdirectory(SimpleSolventCreator)
+
