@@ -18,7 +18,7 @@
 
 #include "catchorg/clara/clara.hpp"
 
-#include "Updater_RelabelingLinearChain.h"
+//#include "Updater_RelabelingLinearChain.h"
 
 int main(int argc, char* argv[])
 {
@@ -137,9 +137,9 @@ int main(int argc, char* argv[])
 	typedef Ingredients<Config> Ing;
 	Ing myIngredients;
 
-    myIngredients.setBoxX(64);
-    myIngredients.setBoxY(64);
-    myIngredients.setBoxZ(64);
+    myIngredients.setBoxX(StandartBoxSize_X);
+    myIngredients.setBoxY(StandartBoxSize_Y);
+    myIngredients.setBoxZ(StandartBoxSize_Z);
 
     myIngredients.setPeriodicX(true);
     myIngredients.setPeriodicY(true);
@@ -155,21 +155,7 @@ int main(int argc, char* argv[])
     taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, 1, ChainLength, 1, 1, false));
 
     
-    // taskmanager.addUpdater(new Updater_RelabelingLinearChain<Ing>(myIngredients,64, 1),0);
-	/*
-    // here the input chain is completely labeled as attribut 1
-    while (int32_t i <= myIngredients.getMolecules().size()){
-        myIngredients.modifyMolecules()[i].set
-
-
-    }
-
-
-    // change boxSize to StandartBoxSize
-    myIngredients.setBoxX(StandartBoxSize_X);
-    myIngredients.setBoxY(StandartBoxSize_Y);
-    myIngredients.setBoxZ(StandartBoxSize_Z);
-*/
+    
     // here CoSelvent_1 is added as a chain of lengh 1 with attribute 3
 	taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, CoSolvent_1, 1, AttributCoSolvent_1, AttributCoSolvent_1, mark_CS1_asSolvent));
 
