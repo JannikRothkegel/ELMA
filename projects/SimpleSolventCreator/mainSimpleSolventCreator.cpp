@@ -41,6 +41,8 @@ int main(int argc, char* argv[])
     int32_t StandartBoxSize_Y = 64;
     int32_t StandartBoxSize_Z = 64;
 
+    
+
     // Interaction Energy in kT between the 3 types of monomers
     double Interaction_1_2 = 0.0;
     double Interaction_1_3 = 0.0;
@@ -158,7 +160,9 @@ int main(int argc, char* argv[])
                   << "Interaction between Solvent and CoSolvent in kT:       " << Interaction_2_3 << std::endl;
                   
     }
-       
+
+    
+
 	//seed the globally available random number generators
 	RandomNumberGenerators rng;
 	rng.seedAll();
@@ -200,7 +204,7 @@ int main(int argc, char* argv[])
 
     myIngredients.setNNInteraction(1,2, Interaction_1_2);
     myIngredients.setNNInteraction(2,3, Interaction_2_3);
-    myIngredients.setNNInteraction(1,2, Interaction_1_3);
+    myIngredients.setNNInteraction(1,3, Interaction_1_3);
     myIngredients.synchronize();
 
 	taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>(outfile,myIngredients));
