@@ -19,19 +19,20 @@
 #include "catchorg/clara/clara.hpp"
 
 //#include "Updater_RelabelingLinearChain.h"
+#include <LeMonADE/feature/FeatureNNInteractionReadWrite.h>
 
 int main(int argc, char* argv[])
 {
   try{
 	//std::string infile  = "input.bfm";
 	std::string outfile = "outfile.bfm";
-	uint32_t CoSolvent_1 = 100;
-	uint32_t CoSolvent_2 = 100;
+	uint32_t CoSolvent_1 = 0;
+	uint32_t CoSolvent_2 = 0;
 
     uint32_t ChainLength = 128;
 
-    int32_t AttributCoSolvent_1 = 3;
-	int32_t AttributCoSolvent_2 = 4;
+    int32_t AttributCoSolvent_1 = 2;
+	int32_t AttributCoSolvent_2 = 3;
 
     bool mark_CS1_asSolvent = false;
     bool mark_CS2_asSolvent = false;
@@ -39,6 +40,11 @@ int main(int argc, char* argv[])
     int32_t StandartBoxSize_X = 64;
     int32_t StandartBoxSize_Y = 64;
     int32_t StandartBoxSize_Z = 64;
+
+    // Interaction Energy in kT between the 3 types of monomers
+    double Interaction_1_2 = 0.0;
+    double Interaction_1_3 = 0.0;
+    double Interaction_2_3 = 0.0;
 
     bool showHelp = false;
     
@@ -77,7 +83,7 @@ int main(int argc, char* argv[])
          }
         }, "ChainLength" )
         ["-l"]["--ChainLength"]
-        ("(required) specifies the total number of CoSolvent_1 molecules.")
+        ("(required) specifies the total number of Chain elements. ")
         .required()
 
     | clara::Opt( [&CoSolvent_2](int const cs_2)
@@ -96,6 +102,32 @@ int main(int argc, char* argv[])
         ("(required) specifies the total number of CoSolvent_2 molecules.")
         .required()
 
+    | clara::Opt( [&Interaction_1_2](double const int_1_2)
+        {
+            Interaction_1_2 = int_1_2;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "Interaction1_2" )
+        ["-a"]["--Interation1_2"]
+        ("Specifies the energy bewteen Polymere (1) and Solvent (2).")
+        .required()
+
+    | clara::Opt( [&Interaction_1_3](double const int_1_3)
+        {
+            Interaction_1_3 = Interaction_1_3;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "Interaction1_3" )
+        ["-b"]["--Interation1_3"]
+        ("Specifies the energy bewteen Polymere (1) and Cosolvent (3).")
+        .required()
+
+    | clara::Opt( [&Interaction_2_3](double const int_2_3)
+        {
+            Interaction_2_3 = int_2_3;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "Interaction2_3" )
+        ["-c"]["--Interation2_3"]
+        ("Specifies the energy bewteen Solvent (2) and Cosolvent (3).")
+        .required()
     | clara::Help( showHelp );
         
     auto result = parser.parse( clara::Args( argc, argv ) );
@@ -120,7 +152,10 @@ int main(int argc, char* argv[])
         std::cout << "outfile:       " << outfile << std::endl
                   << "Number of CS 1:       " << CoSolvent_1 << std::endl
                   << "Number of CS 2:       " << CoSolvent_2 << std::endl
-                  << "Chainlength:       " << ChainLength << std::endl;
+                  << "Chainlength:       " << ChainLength << std::endl
+                  << "Interaction between Polymere and Solvent in kT:       " << Interaction_1_2 << std::endl
+                  << "Interaction between Polymere and CoSolvent in kT:       " << Interaction_1_3 << std::endl
+                  << "Interaction between Solvent and CoSolvent in kT:       " << Interaction_2_3 << std::endl;
                   
     }
        
@@ -146,6 +181,7 @@ int main(int argc, char* argv[])
     myIngredients.setPeriodicZ(true);
 
     myIngredients.modifyBondset().addBFMclassicBondset();
+    
     myIngredients.synchronize();
 
 
@@ -156,13 +192,16 @@ int main(int argc, char* argv[])
 
     
     
-    // here CoSelvent_1 is added as a chain of lengh 1 with attribute 3
+    // here CoSelvent_1 is added as a chain of lengh 1 with attribute 2
 	taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, CoSolvent_1, 1, AttributCoSolvent_1, AttributCoSolvent_1, mark_CS1_asSolvent));
 
-    // here CoSelvent_2 is added as a chain of lengh 1 with attribute 4
+    // here CoSelvent_2 is added as a chain of lengh 1 with attribute 3
     taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, CoSolvent_2, 1, AttributCoSolvent_2, AttributCoSolvent_2, mark_CS2_asSolvent));
-    
 
+    myIngredients.setNNInteraction(1,2, Interaction_1_2);
+    myIngredients.setNNInteraction(2,3, Interaction_2_3);
+    myIngredients.setNNInteraction(1,2, Interaction_1_3);
+    myIngredients.synchronize();
 
 	taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>(outfile,myIngredients));
 	
