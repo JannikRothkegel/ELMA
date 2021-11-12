@@ -48,6 +48,10 @@ int main(int argc, char* argv[])
     double Interaction_1_3 = 0.0;
     double Interaction_2_3 = 0.0;
 
+    bool is_negative_1_2 = false;
+    bool is_negative_1_3 = false;
+    bool is_negative_2_3 = false;
+
     bool showHelp = false;
     
     auto parser
@@ -115,7 +119,7 @@ int main(int argc, char* argv[])
 
     | clara::Opt( [&Interaction_1_3](double const int_1_3)
         {
-            Interaction_1_3 = Interaction_1_3;
+            Interaction_1_3 = int_1_3;
             return clara::ParserResult::ok(clara::ParseResultType::Matched);
          }, "Interaction1_3" )
         ["-b"]["--Interation1_3"]
@@ -130,6 +134,34 @@ int main(int argc, char* argv[])
         ["-c"]["--Interation2_3"]
         ("Specifies the energy bewteen Solvent (2) and Cosolvent (3).")
         .required()
+
+    | clara::Opt( [&is_negative_1_2](bool const is_n_1_2)
+        {
+            is_negative_1_2 = is_n_1_2;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "is_negative_1_2" )
+        ["-x"]["--is_negative_1_2"]
+        ("Specifies wether the energy bewteen Polymere (1) and Solvent (2) is negative.")
+        .required()
+
+    | clara::Opt( [&is_negative_1_3](bool const is_n_1_3)
+        {
+            is_negative_1_3 = is_n_1_3;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "is_negative_1_3" )
+        ["-y"]["--is_negative_1_3"]
+        ("Specifies wether the energy bewteen Polymere (1) and Cosolvent (3) is negative.")
+        .required()
+
+    | clara::Opt( [&is_negative_2_3](bool const is_n_2_3)
+        {
+            is_negative_2_3 = is_n_2_3;
+            return clara::ParserResult::ok(clara::ParseResultType::Matched);
+         }, "is_negative_2_3" )
+        ["-z"]["--is_negative_2_3"]
+        ("Specifies wether the energy bewteen Solvent (2) and Cosolvent (3) is negative.")
+        .required()
+
     | clara::Help( showHelp );
         
     auto result = parser.parse( clara::Args( argc, argv ) );
@@ -180,6 +212,19 @@ int main(int argc, char* argv[])
     myIngredients.setBoxY(StandartBoxSize_Y);
     myIngredients.setBoxZ(StandartBoxSize_Z);
 
+    if(is_negative_1_2){
+        Interaction_1_2 *= -1;
+    }
+
+    if(is_negative_1_3){
+        Interaction_1_3 *= -1;
+    }
+
+    if(is_negative_2_3){
+        Interaction_2_3 *= -1;
+    }
+
+
     myIngredients.setPeriodicX(true);
     myIngredients.setPeriodicY(true);
     myIngredients.setPeriodicZ(true);
@@ -188,24 +233,20 @@ int main(int argc, char* argv[])
     
     myIngredients.synchronize();
 
-
+    myIngredients.setNNInteraction(1,2, Interaction_1_2);
+    myIngredients.setNNInteraction(2,3, Interaction_2_3);
+    myIngredients.setNNInteraction(1,3, Interaction_1_3);
+    myIngredients.synchronize();
 
 	TaskManager taskmanager;
 	//taskmanager.addUpdater(new UpdaterReadBfmFile<Ing>(infile,myIngredients,UpdaterReadBfmFile<Ing>::READ_LAST_CONFIG_SAVE),0);
     taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, 1, ChainLength, 1, 1, false));
 
-    
-    
     // here CoSelvent_1 is added as a chain of lengh 1 with attribute 2
 	taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, CoSolvent_1, 1, AttributCoSolvent_1, AttributCoSolvent_1, mark_CS1_asSolvent));
 
     // here CoSelvent_2 is added as a chain of lengh 1 with attribute 3
     taskmanager.addUpdater(new UpdaterAddLinearChains<Ing>(myIngredients, CoSolvent_2, 1, AttributCoSolvent_2, AttributCoSolvent_2, mark_CS2_asSolvent));
-
-    myIngredients.setNNInteraction(1,2, Interaction_1_2);
-    myIngredients.setNNInteraction(2,3, Interaction_2_3);
-    myIngredients.setNNInteraction(1,3, Interaction_1_3);
-    myIngredients.synchronize();
 
 	taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>(outfile,myIngredients));
 	

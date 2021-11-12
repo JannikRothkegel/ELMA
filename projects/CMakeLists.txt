@@ -6,3 +6,5 @@ add_subdirectory(SimpleSimulatorNextNeighborInteraction)
 
 add_subdirectory(SimpleSolventCreator)
 
+add_subdirectory(ChainWalking_Analyzer_RG2)
+
