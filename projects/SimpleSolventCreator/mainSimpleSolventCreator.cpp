@@ -37,9 +37,9 @@ int main(int argc, char* argv[])
     bool mark_CS1_asSolvent = false;
     bool mark_CS2_asSolvent = false;
 
-    int32_t StandartBoxSize_X = 64;
-    int32_t StandartBoxSize_Y = 64;
-    int32_t StandartBoxSize_Z = 64;
+    int32_t StandartBoxSize_X = 32;
+    int32_t StandartBoxSize_Y = 32;
+    int32_t StandartBoxSize_Z = 32;
 
     
 
@@ -78,9 +78,9 @@ int main(int argc, char* argv[])
 
     | clara::Opt( [&ChainLength](int const cl)
         {
-         if (cl <= 0)
+         if (cl < 0)
          {
-            return clara::ParserResult::runtimeError("Chain length must be greater than 0.");
+            return clara::ParserResult::runtimeError("Chain length must not be greater than 0.");
          }
          else
          {
