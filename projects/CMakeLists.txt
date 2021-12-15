@@ -11,3 +11,5 @@ add_subdirectory(ChainWalking_Analyzer_RG2)
 add_subdirectory(ChainWalking_Analyzer_Scattering)
 
 add_subdirectory(AnalyzerHeatCapacityNNShellContacts)
+
+add_subdirectory(AnalyzerCounterNNShellContacts)
