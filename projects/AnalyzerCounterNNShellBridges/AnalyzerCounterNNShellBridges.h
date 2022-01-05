@@ -129,7 +129,9 @@ void AnalyzerCounterNNShellContacts<IngredientsType>::getNumberCoSolventInNNShel
 	int32_t numberOfCosolventInShell = 0;
 	int32_t numberOfCosolventAsBridges = 0;
 
-	int32_t numberOfLastFoundContact = 0;
+	int32_t minPolymereForBridge = 5; // minimum number of polymere to be between two contacts in order to count as bridge
+
+
 
 	//loop through all polymer
 	for (size_t n = 0; n < ingredients.getMolecules().size(); n++)
@@ -143,6 +145,9 @@ void AnalyzerCounterNNShellContacts<IngredientsType>::getNumberCoSolventInNNShel
 		if (monoType == 3)
 		{
 			int32_t counterContacts = 0;
+
+
+			std::vector<int32_t> IndexOfContactedMonomer; // holds the Index of the contacted polymere monomers per cosolvent
 
 			for (size_t m = 0; m < ingredients.getMolecules().size(); m++)
 			{
@@ -158,10 +163,12 @@ void AnalyzerCounterNNShellContacts<IngredientsType>::getNumberCoSolventInNNShel
 					{
 						counterContacts++;
 
+						IndexOfContactedMonomer.push_back(m);
+
 						
 					}
 
-					// save number of last found contact
+					
 
 				}
 			}
@@ -172,8 +179,17 @@ void AnalyzerCounterNNShellContacts<IngredientsType>::getNumberCoSolventInNNShel
 			}
 			// add one to bridge statistic if more than one interaction is detected
 			if (counterContacts > 1)
-			{
-				numberOfCosolventAsBridges++;
+			{	
+				// sort IndexOfContactedMonomer vector
+				sort(IndexOfContactedMonomer.begin(), IndexOfContactedMonomer.end());
+				
+
+				// check if bridge condition holds
+				if (IndexOfContactedMonomer.back() - IndexOfContactedMonomer.front() >= minPolymereForBridge){
+
+					numberOfCosolventAsBridges++;
+				}
+				
 			}
 
 
@@ -243,7 +259,7 @@ void AnalyzerCounterNNShellContacts<IngredientsType>::cleanup()
 	std::string::size_type const p(filenameGeneral.find_last_of('.'));
 	filenameGeneral = filenameGeneral.substr(0, p);
 
-	std::string filenameRg2_Ree_b2 = filenameGeneral + "_AnalyzerCounterNNShellContacts.dat";
+	std::string filenameRg2_Ree_b2 = filenameGeneral + "_AnalyzerCounterNNShellBridges.dat";
 
 	std::cout << " Write output to: " << dstdir << "/" << filenameRg2_Ree_b2 << std::endl;
 

@@ -37,9 +37,9 @@ int main(int argc, char* argv[])
     bool mark_CS1_asSolvent = false;
     bool mark_CS2_asSolvent = false;
 
-    int32_t StandartBoxSize_X = 32;
-    int32_t StandartBoxSize_Y = 32;
-    int32_t StandartBoxSize_Z = 32;
+    int32_t StandartBoxSize_X = 64;
+    int32_t StandartBoxSize_Y = 64;
+    int32_t StandartBoxSize_Z = 64;
 
     
 
